@@ -14,6 +14,8 @@ const addItemActionCreator = (state, action) => {
         existingItem.quantity++;
         existingItem.total += newItem.price;
     }
+
+    state.totalSize++;
 }
 
 const removeItemActionCreator = (state, action) => {
@@ -27,6 +29,8 @@ const removeItemActionCreator = (state, action) => {
         existingItem.quantity--;
         existingItem.total -= existingItem.price;
     }
+
+    state.totalSize--;
 }
 
 export const cartSlice = createSlice({
