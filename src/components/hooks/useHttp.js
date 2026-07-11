@@ -3,6 +3,10 @@ import {uiSliceActions} from "../../store/ui-slice";
 import {useCallback} from "react";
 
 const apiEndpoints = {
+    sendGetCart: {
+        url: 'https://redux-cart-demo-eac5f-default-rtdb.firebaseio.com/cart.json',
+        errorMessage: 'Error occurred during cart fetching',
+    },
     sendPutCart: {
         url: 'https://redux-cart-demo-eac5f-default-rtdb.firebaseio.com/cart.json',
         errorMessage: 'Error occurred during during cart update'
@@ -22,22 +26,32 @@ const useHttp = () => {
         }));
     }, [dispatch]);
 
-    const sendGetCart = async () => {
+    const sendGetCart = useCallback(async () => {
         dispatch(uiSliceActions.showNotification({
             status: 'pending',
             title: 'Sending...',
-            message: 'Sending request to get your cart...',
+            message: 'Sending request to fetch cart...',
         }))
 
-        const response = await fetch(apiEndpoints.cart);
+        try {
+            const response = await fetch(apiEndpoints.sendGetCart.url);
 
-        if (!response.ok) {
-            console.log(`Error occurred during request: GET ${apiEndpoints.cart}`);
-            return;
+            if (!response.ok) {
+                handleRequestError('GET', apiEndpoints.sendGetCart.url, apiEndpoints.sendGetCart.errorMessage)
+                return;
+            }
+
+            dispatch(uiSliceActions.showNotification({
+                status: 'success',
+                title: 'Success!',
+                message: 'Cart fetched successfully',
+            }));
+
+            return await response.json();
+        } catch (error) {
+            handleRequestError('GET', apiEndpoints.sendGetCart.url, error.message);
         }
-
-        return await response.json();
-    }
+    }, [dispatch, handleRequestError]);
 
     const sendPutCart = useCallback(async (cart) => {
         dispatch(uiSliceActions.showNotification({
@@ -46,25 +60,27 @@ const useHttp = () => {
             message: 'Sending request to update cart...',
         }));
 
-        const response = await fetch(apiEndpoints.sendPutCart.url, {
-            method: 'PUT',
-            body: JSON.stringify(cart),
-        }).catch((error) => {
-            console.log(error.message);
-        });
+        try {
+            const response = await fetch(apiEndpoints.sendPutCart.url, {
+                method: 'PUT',
+                body: JSON.stringify(cart),
+            });
 
-        if (!response || !response.ok) {
-            handleRequestError('PUT', apiEndpoints.sendPutCart, apiEndpoints.sendPutCart.errorMessage);
-            return;
+            if (!response.ok) {
+                handleRequestError('PUT', apiEndpoints.sendPutCart.url, apiEndpoints.sendPutCart.errorMessage);
+                return;
+            }
+
+            dispatch(uiSliceActions.showNotification({
+                status: 'success',
+                title: 'Success!',
+                message: 'Cart updated successfully',
+            }));
+
+            return await response.json();
+        } catch (error) {
+            handleRequestError('PUT', apiEndpoints.sendPutCart.url, error.message);
         }
-
-        dispatch(uiSliceActions.showNotification({
-            status: 'success',
-            title: 'Success!',
-            message: 'Cart updated successfully',
-        }));
-
-        return await response.json();
     }, [dispatch, handleRequestError]);
 
     return {

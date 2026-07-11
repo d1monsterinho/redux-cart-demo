@@ -40,11 +40,15 @@ export const cartSlice = createSlice({
         totalSize: 0,
     },
     reducers: {
-        addItem(action, state) {
-            addItemActionCreator(action, state);
+        replaceCart(state, action) {
+            state.items = action.payload.items;
+            state.totalSize = action.payload.totalSize;
         },
-        removeItem(action, state) {
-            removeItemActionCreator(action, state);
+        addItem(state, action) {
+            addItemActionCreator(state, action);
+        },
+        removeItem(state, action) {
+            removeItemActionCreator(state, action);
         },
     },
 });
